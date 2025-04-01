@@ -22,19 +22,29 @@
       font-size: 2.5em;
       margin-top: 0;
     }
-    input[type="text"] {
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      max-width: 90%;
+      margin: 0 auto;
+    }
+    #search {
       padding: 10px;
-      width: 80%;
-      max-width: 600px;
-      margin: 20px auto;
-      display: block;
+      width: 60%;
+      max-width: 500px;
       border-radius: 5px;
       border: none;
       font-size: 1em;
+      margin-top: 20px;
+    }
+    .calc-toggle {
+      margin-top: 20px;
     }
     table {
       width: 90%;
-      margin: 0 auto;
+      margin: 20px auto;
       border-collapse: collapse;
       background-color: rgba(255, 255, 255, 0.9);
       color: black;
@@ -61,7 +71,7 @@
       display: none;
       background-color: white;
       padding: 15px;
-      margin: 20px auto;
+      margin: 20px auto 0;
       width: 90%;
       max-width: 600px;
       border-radius: 10px;
@@ -75,22 +85,12 @@
 <body>
   <div class="overlay">
     <h1>ARTICULOS SILFAB - FARMACIA PINTAR</h1>
-    <input type="text" id="search" placeholder="Buscar por nombre o código...">
-    <table id="productTable">
-      <thead>
-        <tr>
-          <th>Nombre</th>
-          <th>Código</th>
-          <th>Precio sugerido</th>
-          <th>Precio mínimo</th>
-          <th>Agregar</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
 
-    <div>
-      <button onclick="toggleCalculadora()">Ver Calculadora</button>
+    <div class="top-bar">
+      <input type="text" id="search" placeholder="Buscar por nombre o código...">
+      <div class="calc-toggle">
+        <button onclick="toggleCalculadora()">Ver Calculadora</button>
+      </div>
     </div>
 
     <div id="calculadora-container">
@@ -108,6 +108,19 @@
       </table>
       <div><strong>Total: $<span id="calculadora-total">0.00</span></strong></div>
     </div>
+
+    <table id="productTable">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Código</th>
+          <th>Precio sugerido</th>
+          <th>Precio mínimo</th>
+          <th>Agregar</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
   </div>
 
   <script>
