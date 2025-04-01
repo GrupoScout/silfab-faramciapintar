@@ -57,6 +57,19 @@
     button:hover {
       background-color: #45a049;
     }
+    #calculadora-container {
+      display: none;
+      background-color: white;
+      padding: 15px;
+      margin: 20px auto;
+      width: 90%;
+      max-width: 600px;
+      border-radius: 10px;
+      color: black;
+    }
+    #calculadora-container table {
+      width: 100%;
+    }
   </style>
 </head>
 <body>
@@ -75,6 +88,26 @@
       </thead>
       <tbody></tbody>
     </table>
+
+    <div>
+      <button onclick="toggleCalculadora()">Ver Calculadora</button>
+    </div>
+
+    <div id="calculadora-container">
+      <h2>Calculadora</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Producto</th>
+            <th>Cantidad</th>
+            <th>Precio</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody id="calculadora-body"></tbody>
+      </table>
+      <div><strong>Total: $<span id="calculadora-total">0.00</span></strong></div>
+    </div>
   </div>
 
   <script>
@@ -107,6 +140,11 @@
       }
     }
 
+    function toggleCalculadora() {
+      const container = document.getElementById("calculadora-container");
+      container.style.display = container.style.display === "none" ? "block" : "none";
+    }
+
     function addToCalculadora(nombre, precio) {
       let item = calculadora.find(p => p.Producto === nombre);
       if (item) {
@@ -115,51 +153,20 @@
       } else {
         calculadora.push({ Producto: nombre, Unidades: 1, Precio: precio, Total: precio });
       }
-      printTicket();
+      renderCalculadora();
     }
 
-    function printTicket() {
-      const now = new Date();
-      const fecha = now.toLocaleDateString('es-AR');
-      const hora = now.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: true });
-      const ticketContent = `
-        <div style="width:80mm; border: 2px solid black; padding: 12px; font-family: Arial; font-size: 13px; background: white; color: black;">
-          <div style="border: 2px solid black; padding: 6px; text-align: center; margin-bottom: 10px;">
-            <b style="font-size: 18px;">FARMACIA PINTAR</b><br>
-            SAN MIGUEL<br>AV REMIGIO LOPEZ 2393<br>
-            TEL: 44555502 - WHATSAPP: 1153183466<br>
-            <b>COMPROBANTE NO FISCAL</b><br>
-            FECHA: ${fecha} - HORA: ${hora}<br>
-            <b>TURNOS: www.turnosdefarmacias.info</b>
-          </div>
-          <div style="border: 2px solid black; padding: 6px; margin-bottom: 10px;">
-            ${calculadora.map(item => `
-              <div style="border-bottom: 1px solid black; margin-bottom: 5px; padding-bottom: 5px;">
-                <b>${item.Producto}</b><br>
-                Cantidad: ${item.Unidades}<br>
-                Precio Unitario: $${item.Precio.toFixed(2)}<br>
-                <b>Total: $${item.Total.toFixed(2)}</b>
-              </div>`).join('')}
-            <div style="text-align: right; margin-top: 10px;">
-              <b>TOTAL: $${calculadora.reduce((sum, item) => sum + item.Total, 0).toFixed(2)}</b>
-            </div>
-          </div>
-          <div style="border: 2px solid black; padding: 6px; text-align: center;">
-            <span style="font-size: 9px;">
-              IMPORTANTE: EL PRECIO ES VÁLIDO POR 12HS.<br>
-              PASADAS LAS 12HS, EL PRECIO PODRÍA VARIAR Y SE APLICARÁ LA DIFERENCIA.<br>
-              CUALQUIER RECLAMO SOLO CON TICKET EN MANO.
-            </span>
-            <hr style="border-top: 1px dashed black;">
-            <b>¡GRACIAS POR SU COMPRA!</b>
-          </div>
-        </div>`;
-      const printWindow = window.open('', '_blank');
-      printWindow.document.write(`<html><head><title>Ticket</title></head><body>${ticketContent}</body></html>`);
-      printWindow.document.close();
-      printWindow.focus();
-      printWindow.print();
-      printWindow.close();
+    function renderCalculadora() {
+      const tbody = document.getElementById("calculadora-body");
+      tbody.innerHTML = calculadora.map(item => `
+        <tr>
+          <td>${item.Producto}</td>
+          <td>${item.Unidades}</td>
+          <td>$${item.Precio.toFixed(2)}</td>
+          <td>$${item.Total.toFixed(2)}</td>
+        </tr>`).join('');
+      const total = calculadora.reduce((sum, item) => sum + item.Total, 0);
+      document.getElementById("calculadora-total").innerText = total.toFixed(2);
     }
 
     searchInput.addEventListener('input', () => {
