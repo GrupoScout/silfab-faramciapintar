@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ARTICULOS SILFAB - FARMACIA PINTAR</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: url('paisajes-naturales.jpg') no-repeat center center fixed;
+      background-size: cover;
+      color: white;
+      text-align: center;
+    }
+    .overlay {
+      background-color: rgba(0, 0, 0, 0.6);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    h1 {
+      font-size: 2.5em;
+      margin-top: 0;
+    }
+    input[type="text"] {
+      padding: 10px;
+      width: 80%;
+      max-width: 600px;
+      margin: 20px auto;
+      display: block;
+      border-radius: 5px;
+      border: none;
+      font-size: 1em;
+    }
+    table {
+      width: 90%;
+      margin: 0 auto;
+      border-collapse: collapse;
+      background-color: rgba(255, 255, 255, 0.9);
+      color: black;
+    }
+    th, td {
+      padding: 10px;
+      border: 1px solid #ccc;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+    button {
+      padding: 5px 10px;
+      border: none;
+      border-radius: 4px;
+      background-color: #4CAF50;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+  </style>
+</head>
+<body>
+  <div class="overlay">
+    <h1>ARTICULOS SILFAB - FARMACIA PINTAR</h1>
+    <input type="text" id="search" placeholder="Buscar por nombre o código...">
+    <table id="productTable">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Código</th>
+          <th>Precio sugerido</th>
+          <th>Precio mínimo</th>
+          <th>Agregar</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <script>
+    const products = [
+      { name: "Alcohol en gel 250ml", code: "A001", priceSuggested: 1200, priceMin: 1000 },
+      { name: "Barbijos quirúrgicos x50", code: "B050", priceSuggested: 3200, priceMin: 2900 },
+      { name: "Termómetro digital", code: "T102", priceSuggested: 4200, priceMin: 4000 },
+      { name: "Guantes de látex x100", code: "G100", priceSuggested: 2500, priceMin: 2200 },
+      { name: "Gasas estériles x10", code: "G010", priceSuggested: 800, priceMin: 700 }
+    ];
+
+    let calculadora = [];
+
+    const tbody = document.querySelector('#productTable tbody');
+    const searchInput = document.getElementById('search');
+
+    function renderProducts(filtered = products) {
+      const sorted = [...filtered].sort((a, b) => a.name.localeCompare(b.name));
+      tbody.innerHTML = '';
+      for (const p of sorted) {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${p.name}</td>
+          <td>${p.code}</td>
+          <td>$${p.priceSuggested}</td>
+          <td>$${p.priceMin}</td>
+          <td><button onclick="addToCalculadora('${p.name}', ${p.priceMin})">Agregar</button></td>
+        `;
+        tbody.appendChild(row);
+      }
+    }
+
+    function addToCalculadora(nombre, precio) {
+      let item = calculadora.find(p => p.Producto === nombre);
+      if (item) {
+        item.Unidades++;
+        item.Total = item.Unidades * item.Precio;
+      } else {
+        calculadora.push({ Producto: nombre, Unidades: 1, Precio: precio, Total: precio });
+      }
+      printTicket();
+    }
+
+    function printTicket() {
+      const now = new Date();
+      const fecha = now.toLocaleDateString('es-AR');
+      const hora = now.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: true });
+      const ticketContent = `
+        <div style="width:80mm; border: 2px solid black; padding: 12px; font-family: Arial; font-size: 13px; background: white; color: black;">
+          <div style="border: 2px solid black; padding: 6px; text-align: center; margin-bottom: 10px;">
+            <b style="font-size: 18px;">FARMACIA PINTAR</b><br>
+            SAN MIGUEL<br>AV REMIGIO LOPEZ 2393<br>
+            TEL: 44555502 - WHATSAPP: 1153183466<br>
+            <b>COMPROBANTE NO FISCAL</b><br>
+            FECHA: ${fecha} - HORA: ${hora}<br>
+            <b>TURNOS: www.turnosdefarmacias.info</b>
+          </div>
+          <div style="border: 2px solid black; padding: 6px; margin-bottom: 10px;">
+            ${calculadora.map(item => `
+              <div style="border-bottom: 1px solid black; margin-bottom: 5px; padding-bottom: 5px;">
+                <b>${item.Producto}</b><br>
+                Cantidad: ${item.Unidades}<br>
+                Precio Unitario: $${item.Precio.toFixed(2)}<br>
+                <b>Total: $${item.Total.toFixed(2)}</b>
+              </div>`).join('')}
+            <div style="text-align: right; margin-top: 10px;">
+              <b>TOTAL: $${calculadora.reduce((sum, item) => sum + item.Total, 0).toFixed(2)}</b>
+            </div>
+          </div>
+          <div style="border: 2px solid black; padding: 6px; text-align: center;">
+            <span style="font-size: 9px;">
+              IMPORTANTE: EL PRECIO ES VÁLIDO POR 12HS.<br>
+              PASADAS LAS 12HS, EL PRECIO PODRÍA VARIAR Y SE APLICARÁ LA DIFERENCIA.<br>
+              CUALQUIER RECLAMO SOLO CON TICKET EN MANO.
+            </span>
+            <hr style="border-top: 1px dashed black;">
+            <b>¡GRACIAS POR SU COMPRA!</b>
+          </div>
+        </div>`;
+      const printWindow = window.open('', '_blank');
+      printWindow.document.write(`<html><head><title>Ticket</title></head><body>${ticketContent}</body></html>`);
+      printWindow.document.close();
+      printWindow.focus();
+      printWindow.print();
+      printWindow.close();
+    }
+
+    searchInput.addEventListener('input', () => {
+      const value = searchInput.value.trim().toLowerCase();
+      const results = products.filter(p => {
+        if (/^[a-z0-9]+$/i.test(value)) {
+          return p.code.toLowerCase() === value || p.name.toLowerCase().includes(value);
+        }
+        return p.name.toLowerCase().includes(value);
+      });
+      renderProducts(results);
+    });
+
+    renderProducts();
+  </script>
+</body>
+</html>
