@@ -138,9 +138,7 @@
 
     <table id="productTable">
       <thead>
-        <tr>
-          <th>Nombre</th>
-          <th>Código</th>
+        <tr><th>Código</th><th>Nombre</th>
           <th>Precio sugerido</th>
           <th>Precio mínimo</th>
           <th>Agregar</th>
@@ -152,7 +150,137 @@
   </div>
 
   <script>
-    // (El script ya está correcto y no necesita cambios para este ajuste visual)
-  </script>
+    const products = [
+      { name: "AC. FOLICO 1 x10", code: "A001", priceSuggested: 2500, priceMin: 2400 },
+      { name: "AC. FOLICO 5 x10", code: "A002", priceSuggested: 3600, priceMin: 3500 },
+      { name: "ACENOCUMAROL 4MG x10", code: "A003", priceSuggested: 6300, priceMin: 6200 },
+      { name: "ACICLOVIR 800 x5", code: "A004", priceSuggested: 6200, priceMin: 6100 },
+      { name: "AGUA OXIGENADA 10 100cc", code: "A005", priceSuggested: 460, priceMin: 450 },
+      { name: "AGUA OXIGENADA 10 250cc", code: "A006", priceSuggested: 1000, priceMin: 980 }
+    ];
+
+    let calculadora = [];
+
+    const tbody = document.querySelector('#productTable tbody');
+    const searchInput = document.getElementById('search');
+
+    function renderProducts(filtered = products) {
+      const sorted = [...filtered].sort((a, b) => a.name.localeCompare(b.name));
+      tbody.innerHTML = '';
+      for (const p of sorted) {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${p.code}</td>
+          <td>${p.name}</td>
+          <td>$${p.priceSuggested.toFixed(2)}</td>
+          <td>$${p.priceMin.toFixed(2)}</td>
+          <td><button onclick="addToCalculadora('${p.name}', ${p.priceMin})">Agregar</button></td>
+        `;
+        tbody.appendChild(row);
+      }
+    }
+
+    function toggleCalculadora() {
+      const container = document.getElementById("calculadora-container");
+      container.style.display = container.style.display === "none" ? "block" : "none";
+    }
+
+    function addToCalculadora(nombre, precio) {
+      let item = calculadora.find(p => p.Producto === nombre);
+      if (item) {
+        item.Unidades++;
+        item.Total = item.Unidades * item.Precio;
+      } else {
+        calculadora.push({ Producto: nombre, Unidades: 1, Precio: precio, Total: precio });
+      }
+      renderCalculadora();
+    }
+
+    function eliminarDeCalculadora(nombre) {
+      calculadora = calculadora.filter(item => item.Producto !== nombre);
+      renderCalculadora();
+    }
+
+    function renderCalculadora() {
+      const tbody = document.getElementById("calculadora-body");
+      tbody.innerHTML = calculadora.map(item => `
+        <tr>
+          <td>${item.Producto}</td>
+          <td>${item.Unidades}</td>
+          <td>$${item.Precio.toFixed(2)}</td>
+          <td>$${item.Total.toFixed(2)}</td>
+          <td><button onclick="eliminarDeCalculadora('${item.Producto}')">Eliminar</button></td>
+        </tr>`).join('');
+      const total = calculadora.reduce((sum, item) => sum + item.Total, 0);
+      document.getElementById("calculadora-total").innerText = total.toFixed(2);
+    }
+
+    function toUpperCaseInput(input) {
+      input.value = input.value.toUpperCase();
+    }
+
+    function addManualProduct() {
+      const name = document.getElementById("manual-product-name").value.trim();
+      const quantity = parseInt(document.getElementById("manual-product-quantity").value);
+      const price = parseFloat(document.getElementById("manual-product-price").value);
+      if (!name || isNaN(quantity) || isNaN(price)) return alert("Completa todos los campos correctamente.");
+      calculadora.push({ Producto: name.toUpperCase(), Unidades: quantity, Precio: price, Total: quantity * price });
+      renderCalculadora();
+    }
+
+    function printTicket() {
+      const now = new Date();
+      const fecha = now.toLocaleDateString('es-AR');
+      const hora = now.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', hour12: true });
+      const ticketContent = `
+        <div style="width:80mm; border: 2px solid black; padding: 12px; font-family: Arial; font-size: 13px; background: white; color: black;">
+          <div style="border: 2px solid black; padding: 6px; text-align: center; margin-bottom: 10px;">
+            <b style="font-size: 18px;">FARMACIA PINTAR</b><br>
+            SAN MIGUEL<br>AV REMIGIO LOPEZ 2393<br>
+            TEL: 44555502 - WHATSAPP: 1153183466<br>
+            <b>COMPROBANTE NO FISCAL</b><br>
+            FECHA: ${fecha} - HORA: ${hora}<br>
+            <b>TURNOS: www.turnosdefarmacias.info</b>
+          </div>
+          <div style="border: 2px solid black; padding: 6px; margin-bottom: 10px;">
+            ${calculadora.map(item => `
+              <div style="border-bottom: 1px solid black; margin-bottom: 5px; padding-bottom: 5px;">
+                <b>${item.Producto}</b><br>
+                Cantidad: ${item.Unidades}<br>
+                Precio Unitario: $${item.Precio.toFixed(2)}<br>
+                <b>Total: $${item.Total.toFixed(2)}</b>
+              </div>`).join('')}
+            <div style="text-align: right; margin-top: 10px;">
+              <b>TOTAL: $${calculadora.reduce((sum, item) => sum + item.Total, 0).toFixed(2)}</b>
+            </div>
+          </div>
+          <div style="border: 2px solid black; padding: 6px; text-align: center;">
+            <span style="font-size: 9px;">
+              IMPORTANTE: EL PRECIO ES VÁLIDO POR 12HS.<br>
+              PASADAS LAS 12HS, EL PRECIO PODRÍA VARIAR Y SE APLICARÁ LA DIFERENCIA.<br>
+              CUALQUIER RECLAMO SOLO CON TICKET EN MANO.
+            </span>
+            <hr style="border-top: 1px dashed black;">
+            <b>¡GRACIAS POR SU COMPRA!</b>
+          </div>
+        </div>`;
+      const printWindow = window.open('', '_blank');
+      printWindow.document.write(`<html><head><title>Ticket</title></head><body>${ticketContent}</body></html>`);
+      printWindow.document.close();
+      printWindow.focus();
+      printWindow.print();
+      printWindow.close();
+    }
+
+    searchInput.addEventListener('input', () => {
+      const value = searchInput.value.trim().toLowerCase();
+      const results = products.filter(p => {
+        return p.code.toLowerCase().includes(value) || p.name.toLowerCase().includes(value);
+      });
+      renderProducts(results);
+    });
+
+    renderProducts();
+</script>
 </body>
 </html>
